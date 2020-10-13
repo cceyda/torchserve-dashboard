@@ -100,7 +100,8 @@ if loaded_models:
         st.markdown("# Register a model [(docs)](https://pytorch.org/serve/management_api.html#register-a-model)")
         placeholder = st.empty()
         mar_path = placeholder.selectbox("Choose mar file *", [default_key] + stored_models, index=0)
-        p = st.checkbox("Use another path")
+        # mar_path = os.path.join(model_store,mar_path)
+        p = st.checkbox("or use another path")
         if p:
             mar_path = placeholder.text_input("Input mar file path*")
         model_name = st.text_input(label="Model name *")
@@ -112,8 +113,8 @@ if loaded_models:
         handler = col1.text_input(label="handler")
         runtime = col2.text_input(label="runtime")
 
-        proceed = st.checkbox("Check to proceed", value=False, key=None)
-        if proceed and model_name and mar_path != default_key and os.path.exists(mar_path):
+        proceed = st.button("Register")
+        if proceed and model_name and mar_path != default_key:
             st.write(f"Registering Model...{mar_path} as {model_name}")
             res = tsa.register_model(
                 M_API,
@@ -139,10 +140,11 @@ if loaded_models:
             versions = tsa.get_model(M_API, model_name, list_all=True)
             versions = [m["modelVersion"] for m in versions]
             version = st.selectbox("Choose version to remove", [default_key] + versions, index=0)
-            proceed = st.checkbox("Check to proceed", value=False, key=None)
+            proceed = st.button("Remove")
             if proceed and model_name != default_key and version != default_key:
                 res = tsa.delete_model(M_API, model_name, version)
                 last_res()[0] = res
+                proceed=False
                 rerun()
 
     with st.beta_expander(label="Get model details", expanded=False):
@@ -150,9 +152,9 @@ if loaded_models:
         st.header("Get model details")
         model_name = st.selectbox("Choose model", [default_key] + loaded_models_names, index=0)
         if model_name != default_key:
-            default_version = tsa.get_model(model_name)[0]["modelVersion"]
+            default_version = tsa.get_model(M_API,model_name)[0]["modelVersion"]
             st.write(f"default version {default_version}")
-            versions = tsa.get_model(model_name, list_all=False)
+            versions = tsa.get_model(M_API,model_name, list_all=False)
             versions = [m["modelVersion"] for m in versions]
             version = st.selectbox("Choose version", [default_key, "All"] + versions, index=0)
             if model_name != default_key:
