@@ -4,7 +4,7 @@ Torchserve Dashboard using streamlit
 
 Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard/2020/10/15/torchserve.html)
 
-![Demo](dashboard_demo.gif)
+![Demo](assets/dashboard_demo.gif)
 
 # Usage
 

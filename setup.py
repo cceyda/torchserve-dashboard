@@ -14,7 +14,7 @@ setup(
     author_email="snu.ceyda@gmail.com",
     description="Torchserve dashboard using Streamlit",
     long_description=__doc__,
-    packages=find_packages(exclude=["tests"]),
+    packages=find_packages(exclude=["tests","assets"]),
     include_package_data=True,
     zip_safe=False,
     platforms="any",
