@@ -1,7 +1,8 @@
 # Torchserve Dashboard
 
 Torchserve Dashboard using streamlit
-Related blog [post](https://cceyda.github.io/blog/)
+
+Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard/2020/10/15/torchserve.html)
 
 # Usage
 
@@ -12,7 +13,7 @@ pip3 install torchserve-dashboard
 # torchserve-dashboard [streamlit_options] -- [config_path] [model_store(optional)]
 torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties --model_store ./model_store
 ```
-    OR 
+OR 
 ```bash
 git clone https://github.com/cceyda/torchserve-dashboard.git
 streamlit run torchserve_dashboard/dash.py --server.port 8105 -- --config_path ./torchserve.properties 
