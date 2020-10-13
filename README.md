@@ -7,6 +7,7 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 ![Demo](assets/dashboard_demo.gif)
 
 # Usage
+Additional Requirement: [torchserve](https://github.com/pytorch/serve#install-torchserve)
 
 Simply run:
 
