@@ -11,7 +11,7 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 Simply run:
 
 ```bash
-pip3 install torchserve-dashboard
+pip3 install torchserve-dashboard --user
 # torchserve-dashboard [streamlit_options] -- [config_path] [model_store(optional)]
 torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties --model_store ./model_store
 ```
