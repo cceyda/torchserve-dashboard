@@ -144,7 +144,6 @@ if loaded_models:
             if proceed and model_name != default_key and version != default_key:
                 res = tsa.delete_model(M_API, model_name, version)
                 last_res()[0] = res
-                proceed=False
                 rerun()
 
     with st.beta_expander(label="Get model details", expanded=False):
@@ -164,3 +163,34 @@ if loaded_models:
                 elif version != default_key:
                     res = tsa.get_model(M_API, model_name, version)
                     st.write(res)
+                    
+    with st.beta_expander(label="Scale workers", expanded=False):
+        st.markdown("# Scale workers [(docs)](https://pytorch.org/serve/management_api.html#scale-workers)")
+        model_name = st.selectbox("Pick model", [default_key] + loaded_models_names, index=0)
+        if model_name != default_key:
+            default_version = tsa.get_model(M_API,model_name)[0]["modelVersion"]
+            st.write(f"default version {default_version}")
+            versions = tsa.get_model(M_API,model_name, list_all=False)
+            versions = [m["modelVersion"] for m in versions]
+            version = st.selectbox("Choose version", ["All"] + versions, index=0)
+            
+            col1, col2, col3 = st.beta_columns(3)
+            min_worker = col1.number_input(label="min_worker(optional)", value=-1, min_value=-1, step=1)
+            max_worker = col2.number_input(label="max_worker(optional)", value=-1, min_value=-1, step=1)
+            number_gpu = col3.number_input(label="number_gpu(optional)", value=-1, min_value=-1, step=1)
+            proceed = st.button("Apply")
+            if proceed and model_name != default_key:
+                # number_input can't be set to None
+                if version == "All":
+                    version=None
+                if min_worker == -1:
+                    min_worker=None
+                if max_worker == -1:
+                    max_worker=None
+                if number_gpu == -1:
+                    number_gpu=None
+                
+                res = tsa.change_model_workers(M_API, model_name, version=version, min_worker=min_worker, max_worker=max_worker, number_gpu=number_gpu)
+                last_res()[0] = res
+                rerun()
+

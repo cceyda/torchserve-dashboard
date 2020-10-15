@@ -5,6 +5,7 @@ import httpx
 
 import streamlit as st
 
+
 def raise_on_not200(response):
     if response.status_code != 200:
         st.write("There was an error!")
@@ -96,5 +97,20 @@ def change_model_default(M_API, model_name, version):
     if version:
         req_url += "/" + version
     req_url += "/set-default"
+    res = client.put(req_url)
+    return res.json()
+
+
+def change_model_workers(M_API, model_name, version=None, min_worker=None, max_worker=None, number_gpu=None):
+    req_url = M_API + "/models/" + model_name
+    if version:
+        req_url += "/" + version
+    req_url += "?synchronous=false"
+    if min_worker:
+        req_url += "&min_worker=" + str(min_worker)
+    if max_worker:
+        req_url += "&max_worker=" + str(max_worker)
+    if number_gpu:
+        req_url += "&number_gpu=" + str(number_gpu)
     res = client.put(req_url)
     return res.json()
