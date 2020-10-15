@@ -31,6 +31,9 @@ number_of_gpu=0
 batch_size=1
 model_store=/mnt/pretrained/model_store
 ```
+# Updates
+[15-oct-2020] add [scale workers](https://pytorch.org/serve/management_api.html#scale-workers) tab 
+
 # Help
 
 Open an issue
