@@ -7,7 +7,7 @@ from streamlit.script_runner import RerunException
 
 import api as tsa
 
-st.beta_set_page_config(
+st.set_page_config(
     page_title="Torchserve Management Dashboard",
     page_icon="./icon.png",
     layout="centered",
