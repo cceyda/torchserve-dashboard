@@ -7,7 +7,7 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 ![Demo](assets/dashboard_demo.gif)
 
 # Usage
-Additional Requirement: [torchserve](https://github.com/pytorch/serve#install-torchserve)
+Additional Requirement: [torchserve](https://github.com/pytorch/serve/tree/v0.2.0#install-torchserve)
 
 Simply run:
 
@@ -57,7 +57,7 @@ model_store=/mnt/pretrained/model_store
     
     `vmargs=-Dlog4j.configuration=file:///path/to/custom/log4j.properties`
     
-- **What is the meaning behind the weird versioning**
+- **What is the meaning behind the weird versioning**?
 
     The minor follows the compatible torchserve version, patch version reflects the dashboard versioning
     
