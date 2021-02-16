@@ -5,6 +5,7 @@ import httpx
 
 import streamlit as st
 
+ENVIRON_WHITELIST=["LD_LIBRARY_PATH","LC_CTYPE","LC_ALL","PATH","JAVA_HOME","PYTHONPATH","TS_CONFIG_FILE","LOG_LOCATION","METRICS_LOCATION"]
 
 def raise_on_not200(response):
     if response.status_code != 200:
@@ -15,12 +16,23 @@ def raise_on_not200(response):
 client = httpx.Client(timeout=1000, event_hooks={"response": [raise_on_not200]})
 
 
-def start_torchserve(model_store, config_path):
+def start_torchserve(model_store, config_path, log_location=None, metrics_location=None):
+    new_env={}
+    env=os.environ()
+    for x in ENVIRON_WHITELIST:
+        if x in env:
+            new_env[x]=env[x]
+
+    if log_location:
+        new_env["LOG_LOCATION"]=log_location
+    if metrics_location:
+        new_env["METRICS_LOCATION"]=metrics_location
     if os.path.exists(model_store) and os.path.exists(config_path):
         torchserve_cmd = f"torchserve --start --ncs --model-store {model_store} --ts-config {config_path}"
         subprocess.Popen(
             torchserve_cmd.split(" "),
-            stdout=open("/dev/null", "w"),
+            env=new_env,
+            stdout=open("/dev/null", "r"),
             stderr=open("/dev/null", "w"),
             preexec_fn=os.setpgrp,
         )

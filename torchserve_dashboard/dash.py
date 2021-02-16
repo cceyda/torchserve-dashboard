@@ -6,6 +6,7 @@ from streamlit.script_request_queue import RerunData
 from streamlit.script_runner import RerunException
 
 import api as tsa
+from pathlib import Path
 
 st.set_page_config(
     page_title="Torchserve Management Dashboard",
@@ -13,11 +14,13 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded",
 )
-
+st.write(os.environ)
 parser = argparse.ArgumentParser(description="Torchserve dashboard")
 
 parser.add_argument("--model_store", default=None, help="Directory where your models are stored")
 parser.add_argument("--config_path", default="./default.torchserve.properties", help="Torchserve config path")
+parser.add_argument("--log_location", default="./", help="Passed as environment variable LOG_LOCATION to Torchserve")
+parser.add_argument("--metrics_location", default="./", help="Passed as environment variable METRICS_LOCATION to Torchserve")
 try:
     args = parser.parse_args()
 except SystemExit as e:
@@ -28,6 +31,12 @@ st.title("Torchserve Management Dashboard")
 M_API = "http://127.0.0.1:8081"
 model_store = args.model_store
 config_path = args.config_path
+log_location = args.log_location
+if log_location:
+    log_location = str(Path(log_location).resolve())
+metrics_location = args.metrics_location
+if metrics_location:
+    metrics_location = str(Path(metrics_location).resolve())
 config = None
 default_key = "None"
 
@@ -56,16 +65,18 @@ def last_res():
 def get_model_store():
     return os.listdir(model_store)
 
-
+# As a design choice I'm leaving config_path,log_location,metrics_location non-editable from the UI as a semi-security measure (maybe?:/)
 ##########Sidebar##########
 st.sidebar.markdown(f"## Help")
-st.sidebar.markdown(f"### Management API: \n {M_API}")
-st.sidebar.markdown(f"### Model Store Path: \n {model_store}")
-st.sidebar.markdown(f"### Config Path: \n {config_path}")
+with st.sidebar.beta_expander(label="Show Paths:", expanded=False):
+    st.markdown(f"### Model Store Path: \n {model_store}")
+    st.markdown(f"### Config Path: \n {config_path}")
+    st.markdown(f"### Log Location: \n {log_location}")
+    st.markdown(f"### Metrics Location: \n {metrics_location}")
 
 start = st.sidebar.button("Start Torchserve")
 if start:
-    last_res()[0]= tsa.start_torchserve(model_store, config_path)
+    last_res()[0]= tsa.start_torchserve(model_store, config_path, log_location, metrics_location)
     rerun()
 
 stop = st.sidebar.button("Stop Torchserve")
@@ -104,7 +115,7 @@ if loaded_models:
         p = st.checkbox("or use another path")
         if p:
             mar_path = placeholder.text_input("Input mar file path*")
-        model_name = st.text_input(label="Model name *")
+        model_name = st.text_input(label="Model name (overrides predefined)")
         col1, col2 = st.beta_columns(2)
         batch_size = col1.number_input(label="batch_size", value=0, min_value=0, step=1)
         max_batch_delay = col2.number_input(label="max_batch_delay", value=0, min_value=0, step=100)
@@ -114,21 +125,26 @@ if loaded_models:
         runtime = col2.text_input(label="runtime")
 
         proceed = st.button("Register")
-        if proceed and model_name and mar_path != default_key:
-            st.write(f"Registering Model...{mar_path} as {model_name}")
-            res = tsa.register_model(
-                M_API,
-                mar_path,
-                model_name,
-                handler=handler,
-                runtime=runtime,
-                batch_size=batch_size,
-                max_batch_delay=max_batch_delay,
-                initial_workers=initial_workers,
-                response_timeout=response_timeout,
-            )
-            last_res()[0] = res
-            rerun()
+        if proceed:
+            if mar_path != default_key:
+                st.write(f"Registering Model...{mar_path}")
+                res = tsa.register_model(
+                    M_API,
+                    mar_path,
+                    model_name,
+                    handler=handler,
+                    runtime=runtime,
+                    batch_size=batch_size,
+                    max_batch_delay=max_batch_delay,
+                    initial_workers=initial_workers,
+                    response_timeout=response_timeout,
+                )
+                last_res()[0] = res
+                rerun()
+            else:
+                st.write(":octagonal_sign: Fill the required fileds!")
+        
+            
 
     with st.beta_expander(label="Remove a model", expanded=False):
 
@@ -141,11 +157,14 @@ if loaded_models:
             versions = [m["modelVersion"] for m in versions]
             version = st.selectbox("Choose version to remove", [default_key] + versions, index=0)
             proceed = st.button("Remove")
-            if proceed and model_name != default_key and version != default_key:
-                res = tsa.delete_model(M_API, model_name, version)
-                last_res()[0] = res
-                rerun()
-
+            if proceed:
+                if model_name != default_key and version != default_key:
+                    res = tsa.delete_model(M_API, model_name, version)
+                    last_res()[0] = res
+                    rerun()
+                else:
+                    st.write(":octagonal_sign: Pick a model & version!")
+                    
     with st.beta_expander(label="Get model details", expanded=False):
 
         st.header("Get model details")

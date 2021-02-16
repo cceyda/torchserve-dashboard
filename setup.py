@@ -3,11 +3,11 @@ Torchserve Dashboard using streamlit
 """
 from setuptools import find_packages, setup
 
-dependencies = ["streamlit>=0.68", "click>=7.1.2", "httpx>=0.16.0"]
+dependencies = ["streamlit>=0.76", "click>=7.1.2", "httpx>=0.16.0"]
 
 setup(
     name="torchserve_dashboard",
-    version="v0.2.3",
+    version="v0.2.4",
     url="https://github.com/cceyda/torchserve-dashboard",
     license="Apache Software License 2.0",
     author="Ceyda Cinarel",
