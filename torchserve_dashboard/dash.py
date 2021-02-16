@@ -14,7 +14,7 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded",
 )
-st.write(os.environ)
+
 parser = argparse.ArgumentParser(description="Torchserve dashboard")
 
 parser.add_argument("--model_store", default=None, help="Directory where your models are stored")

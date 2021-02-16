@@ -18,7 +18,7 @@ client = httpx.Client(timeout=1000, event_hooks={"response": [raise_on_not200]})
 
 def start_torchserve(model_store, config_path, log_location=None, metrics_location=None):
     new_env={}
-    env=os.environ()
+    env=os.environ
     for x in ENVIRON_WHITELIST:
         if x in env:
             new_env[x]=env[x]
