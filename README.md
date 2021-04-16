@@ -31,10 +31,14 @@ Example torchserve [config](https://pytorch.org/serve/configuration.html):
 inference_address=http://127.0.0.1:8443
 management_address=http://127.0.0.1:8444
 metrics_address=http://127.0.0.1:8445
+grpc_inference_port=7070
+grpc_management_port=7071
 number_of_gpu=0
 batch_size=1
 model_store=/mnt/pretrained/model_store
 ```
+
+If the server doesn't start for some reason check if your ports are already in use!
 
 # Updates
 [15-oct-2020] add [scale workers](https://pytorch.org/serve/management_api.html#scale-workers) tab 
