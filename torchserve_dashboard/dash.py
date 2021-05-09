@@ -18,11 +18,11 @@ st.set_page_config(
 parser = argparse.ArgumentParser(description="Torchserve dashboard")
 
 parser.add_argument(
-    "--model_store", default=None, help="Directory where your models are stored"
+    "--model_store", default=None, help="Directory where your models are stored (overrides config)"
 )
 parser.add_argument(
     "--config_path",
-    default="./default.torchserve.properties",
+    default="./torchserve.properties",
     help="Torchserve config path",
 )
 parser.add_argument(
@@ -42,6 +42,7 @@ except SystemExit as e:
 
 st.title("Torchserve Management Dashboard") 
 
+
 M_API = "http://127.0.0.1:8081"
 model_store = args.model_store
 config_path = args.config_path
@@ -54,8 +55,12 @@ if metrics_location:
 config = None
 default_key = "None"
 
-if os.path.exists(args.config_path):
-    config = open(args.config_path, "r").readlines()
+if not os.path.exists(config_path):
+    st.write(f"Can't find config file at {config_path}. Using default config instead")
+    config_path = os.path.join(os.path.dirname(__file__),"default.torchserve.properties")
+
+if os.path.exists(config_path):
+    config = open(config_path, "r").readlines()
     for c in config:
         if c.startswith("model_store"):
             if not model_store:
@@ -64,9 +69,13 @@ if os.path.exists(args.config_path):
             M_API = c.split("=")[-1].strip()
 
 if model_store is None:
-    st.write("model_store is required!")
-
-
+    st.write(f"model_store is required!")
+    st.stop()
+    
+if not os.path.isdir(model_store):
+    st.write(f"Created model store directory {model_store}")
+    os.makedirs(model_store, exist_ok=True)
+    
 def rerun():
     raise RerunException(RerunData(None))
 
@@ -133,7 +142,7 @@ if torchserve_status:
             "Choose mar file *", [default_key] + stored_models, index=0
         )
         # mar_path = os.path.join(model_store,mar_path)
-        p = st.checkbox("or use another path")
+        p = st.checkbox("manually enter path")
         if p:
             mar_path = placeholder.text_input("Input mar file path*")
         model_name = st.text_input(label="Model name (overrides predefined)")

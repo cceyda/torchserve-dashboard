@@ -8,14 +8,18 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 
 # Usage
 Additional Requirement: 
-[torchserve](https://github.com/pytorch/serve/tree/v0.2.0#install-torchserve) (recommended:v0.2 | works on v0.3(untested))
+[torchserve](https://github.com/pytorch/serve/tree/v0.3.1#install-torchserve-and-torch-model-archiver) (recommended:v0.3.1)
 
 Simply run:
 
 ```bash
 pip3 install torchserve-dashboard --user
-# torchserve-dashboard [streamlit_options] -- [config_path] [model_store(optional)] [log_location(optional)] [metrics_location(optional)]
-torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties --model_store ./model_store
+# torchserve-dashboard [streamlit_options(optional)] -- [config_path(optional)] [model_store(optional)] [log_location(optional)] [metrics_location(optional)]
+torchserve-dashboard
+#OR change port 
+torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties
+#OR provide a custom configuration 
+torchserve-dashboard -- --config_path ./torchserve.properties --model_store ./model_store
 ```
 
 :exclamation: Keep in mind that If you change any of the `--config_path`,`--model_store`,`--metrics_location`,`--log_location` options while there is a torchserver already running before starting torch-dashboard they won't come into effect until you stop&start torchserve.
@@ -23,6 +27,8 @@ torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties
 OR 
 ```bash
 git clone https://github.com/cceyda/torchserve-dashboard.git
+streamlit run torchserve_dashboard/dash.py 
+#OR
 streamlit run torchserve_dashboard/dash.py --server.port 8105 -- --config_path ./torchserve.properties 
 ```
 Example torchserve [config](https://pytorch.org/serve/configuration.html):
@@ -35,15 +41,18 @@ grpc_inference_port=7070
 grpc_management_port=7071
 number_of_gpu=0
 batch_size=1
-model_store=/mnt/pretrained/model_store
+model_store=./model_store
 ```
 
 If the server doesn't start for some reason check if your ports are already in use!
 
 # Updates
+
 [15-oct-2020] add [scale workers](https://pytorch.org/serve/management_api.html#scale-workers) tab 
 
 [16-feb-2021] (functionality) make logpath configurable,(functionality)remove model_name requirement,(UI)add cosmetic error messages
+
+[10-may-2021] update config & make it optional. update streamlit. Auto create folders
 
 # FAQs
 - **Does torchserver keep running in the background?**
