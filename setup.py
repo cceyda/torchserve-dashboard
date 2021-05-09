@@ -7,7 +7,7 @@ dependencies = ["streamlit==0.81.1", "click>=7.1.2", "httpx>=0.16.0"]
 
 setup(
     name="torchserve_dashboard",
-    version="v0.3.1",
+    version="v0.3.2",
     url="https://github.com/cceyda/torchserve-dashboard",
     license="Apache Software License 2.0",
     author="Ceyda Cinarel",
