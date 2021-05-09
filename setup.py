@@ -3,7 +3,7 @@ Torchserve Dashboard using streamlit
 """
 from setuptools import find_packages, setup
 
-dependencies = ["streamlit>=0.76", "click>=7.1.2", "httpx>=0.16.0"]
+dependencies = ["streamlit==0.81.1", "click>=7.1.2", "httpx>=0.16.0"]
 
 setup(
     name="torchserve_dashboard",
@@ -11,7 +11,7 @@ setup(
     url="https://github.com/cceyda/torchserve-dashboard",
     license="Apache Software License 2.0",
     author="Ceyda Cinarel",
-    author_email="snu.ceyda@gmail.com",
+    author_email="15624271+cceyda@users.noreply.github.com",
     description="Torchserve dashboard using Streamlit",
     long_description=__doc__,
     packages=find_packages(exclude=["tests","assets"]),
@@ -25,23 +25,12 @@ setup(
         """,
     classifiers=[
         # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        # 'Development Status :: 1 - Planning',
-        # 'Development Status :: 2 - Pre-Alpha',
-        # 'Development Status :: 3 - Alpha',
         "Development Status :: 4 - Beta",
-        # 'Development Status :: 5 - Production/Stable',
-        # 'Development Status :: 6 - Mature',
-        # 'Development Status :: 7 - Inactive',
-        "Environment :: Console",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: POSIX",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: MacOS",
         "Operating System :: Unix",
         "Operating System :: Microsoft :: Windows",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
-        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
 )

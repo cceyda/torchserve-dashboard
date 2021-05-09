@@ -17,16 +17,30 @@ st.set_page_config(
 
 parser = argparse.ArgumentParser(description="Torchserve dashboard")
 
-parser.add_argument("--model_store", default=None, help="Directory where your models are stored")
-parser.add_argument("--config_path", default="./default.torchserve.properties", help="Torchserve config path")
-parser.add_argument("--log_location", default="./", help="Passed as environment variable LOG_LOCATION to Torchserve")
-parser.add_argument("--metrics_location", default="./", help="Passed as environment variable METRICS_LOCATION to Torchserve")
+parser.add_argument(
+    "--model_store", default=None, help="Directory where your models are stored"
+)
+parser.add_argument(
+    "--config_path",
+    default="./default.torchserve.properties",
+    help="Torchserve config path",
+)
+parser.add_argument(
+    "--log_location",
+    default="./logs/",
+    help="Passed as environment variable LOG_LOCATION to Torchserve",
+)
+parser.add_argument(
+    "--metrics_location",
+    default="./logs/metrics/",
+    help="Passed as environment variable METRICS_LOCATION to Torchserve",
+)
 try:
     args = parser.parse_args()
 except SystemExit as e:
     os._exit(e.code)
 
-st.title("Torchserve Management Dashboard")
+st.title("Torchserve Management Dashboard") 
 
 M_API = "http://127.0.0.1:8081"
 model_store = args.model_store
@@ -65,6 +79,7 @@ def last_res():
 def get_model_store():
     return os.listdir(model_store)
 
+
 # As a design choice I'm leaving config_path,log_location,metrics_location non-editable from the UI as a semi-security measure (maybe?:/)
 ##########Sidebar##########
 st.sidebar.markdown(f"## Help")
@@ -76,7 +91,9 @@ with st.sidebar.beta_expander(label="Show Paths:", expanded=False):
 
 start = st.sidebar.button("Start Torchserve")
 if start:
-    last_res()[0]= tsa.start_torchserve(model_store, config_path, log_location, metrics_location)
+    last_res()[0] = tsa.start_torchserve(
+        model_store, config_path, log_location, metrics_location
+    )
     rerun()
 
 stop = st.sidebar.button("Stop Torchserve")
@@ -84,13 +101,13 @@ if stop:
     last_res()[0] = tsa.stop_torchserve()
     rerun()
 
-loaded_models = tsa.get_loaded_models(M_API)
-if loaded_models:
-    loaded_models_names = [m["modelName"] for m in loaded_models["models"]]
+torchserve_status = tsa.get_loaded_models(M_API)
+if torchserve_status:
+    loaded_models_names = [m["modelName"] for m in torchserve_status["models"]]
 else:
     st.header("Torchserve is down...")
 st.sidebar.subheader("Loaded models")
-st.sidebar.write(loaded_models)
+st.sidebar.write(torchserve_status)
 
 stored_models = get_model_store()
 st.sidebar.subheader("Available models")
@@ -104,13 +121,17 @@ with st.beta_expander(label="Show torchserve config", expanded=False):
     st.write(config)
     st.markdown("[configuration docs](https://pytorch.org/serve/configuration.html)")
 
-if loaded_models:
+if torchserve_status:
 
     with st.beta_expander(label="Register a model", expanded=False):
 
-        st.markdown("# Register a model [(docs)](https://pytorch.org/serve/management_api.html#register-a-model)")
+        st.markdown(
+            "# Register a model [(docs)](https://pytorch.org/serve/management_api.html#register-a-model)"
+        )
         placeholder = st.empty()
-        mar_path = placeholder.selectbox("Choose mar file *", [default_key] + stored_models, index=0)
+        mar_path = placeholder.selectbox(
+            "Choose mar file *", [default_key] + stored_models, index=0
+        )
         # mar_path = os.path.join(model_store,mar_path)
         p = st.checkbox("or use another path")
         if p:
@@ -118,9 +139,15 @@ if loaded_models:
         model_name = st.text_input(label="Model name (overrides predefined)")
         col1, col2 = st.beta_columns(2)
         batch_size = col1.number_input(label="batch_size", value=0, min_value=0, step=1)
-        max_batch_delay = col2.number_input(label="max_batch_delay", value=0, min_value=0, step=100)
-        initial_workers = col1.number_input(label="initial_workers", value=1, min_value=0, step=1)
-        response_timeout = col2.number_input(label="response_timeout", value=0, min_value=0, step=100)
+        max_batch_delay = col2.number_input(
+            label="max_batch_delay", value=0, min_value=0, step=100
+        )
+        initial_workers = col1.number_input(
+            label="initial_workers", value=1, min_value=0, step=1
+        )
+        response_timeout = col2.number_input(
+            label="response_timeout", value=0, min_value=0, step=100
+        )
         handler = col1.text_input(label="handler")
         runtime = col2.text_input(label="runtime")
 
@@ -143,19 +170,21 @@ if loaded_models:
                 rerun()
             else:
                 st.write(":octagonal_sign: Fill the required fileds!")
-        
-            
 
     with st.beta_expander(label="Remove a model", expanded=False):
 
         st.header("Remove a model")
-        model_name = st.selectbox("Choose model to remove", [default_key] + loaded_models_names, index=0)
+        model_name = st.selectbox(
+            "Choose model to remove", [default_key] + loaded_models_names, index=0
+        )
         if model_name != default_key:
             default_version = tsa.get_model(M_API, model_name)[0]["modelVersion"]
             st.write(f"default version {default_version}")
             versions = tsa.get_model(M_API, model_name, list_all=True)
             versions = [m["modelVersion"] for m in versions]
-            version = st.selectbox("Choose version to remove", [default_key] + versions, index=0)
+            version = st.selectbox(
+                "Choose version to remove", [default_key] + versions, index=0
+            )
             proceed = st.button("Remove")
             if proceed:
                 if model_name != default_key and version != default_key:
@@ -164,17 +193,21 @@ if loaded_models:
                     rerun()
                 else:
                     st.write(":octagonal_sign: Pick a model & version!")
-                    
+
     with st.beta_expander(label="Get model details", expanded=False):
 
         st.header("Get model details")
-        model_name = st.selectbox("Choose model", [default_key] + loaded_models_names, index=0)
+        model_name = st.selectbox(
+            "Choose model", [default_key] + loaded_models_names, index=0
+        )
         if model_name != default_key:
-            default_version = tsa.get_model(M_API,model_name)[0]["modelVersion"]
+            default_version = tsa.get_model(M_API, model_name)[0]["modelVersion"]
             st.write(f"default version {default_version}")
-            versions = tsa.get_model(M_API,model_name, list_all=False)
+            versions = tsa.get_model(M_API, model_name, list_all=False)
             versions = [m["modelVersion"] for m in versions]
-            version = st.selectbox("Choose version", [default_key, "All"] + versions, index=0)
+            version = st.selectbox(
+                "Choose version", [default_key, "All"] + versions, index=0
+            )
             if model_name != default_key:
                 if version == "All":
                     res = tsa.get_model(M_API, model_name, list_all=True)
@@ -182,34 +215,48 @@ if loaded_models:
                 elif version != default_key:
                     res = tsa.get_model(M_API, model_name, version)
                     st.write(res)
-                    
+
     with st.beta_expander(label="Scale workers", expanded=False):
-        st.markdown("# Scale workers [(docs)](https://pytorch.org/serve/management_api.html#scale-workers)")
-        model_name = st.selectbox("Pick model", [default_key] + loaded_models_names, index=0)
+        st.markdown(
+            "# Scale workers [(docs)](https://pytorch.org/serve/management_api.html#scale-workers)"
+        )
+        model_name = st.selectbox(
+            "Pick model", [default_key] + loaded_models_names, index=0
+        )
         if model_name != default_key:
-            default_version = tsa.get_model(M_API,model_name)[0]["modelVersion"]
+            default_version = tsa.get_model(M_API, model_name)[0]["modelVersion"]
             st.write(f"default version {default_version}")
-            versions = tsa.get_model(M_API,model_name, list_all=False)
+            versions = tsa.get_model(M_API, model_name, list_all=False)
             versions = [m["modelVersion"] for m in versions]
             version = st.selectbox("Choose version", ["All"] + versions, index=0)
-            
+
             col1, col2, col3 = st.beta_columns(3)
-            min_worker = col1.number_input(label="min_worker(optional)", value=-1, min_value=-1, step=1)
-            max_worker = col2.number_input(label="max_worker(optional)", value=-1, min_value=-1, step=1)
-            number_gpu = col3.number_input(label="number_gpu(optional)", value=-1, min_value=-1, step=1)
+            min_worker = col1.number_input(
+                label="min_worker(optional)", value=-1, min_value=-1, step=1
+            )
+            max_worker = col2.number_input(
+                label="max_worker(optional)", value=-1, min_value=-1, step=1
+            )
+            #             number_gpu = col3.number_input(label="number_gpu(optional)", value=-1, min_value=-1, step=1)
             proceed = st.button("Apply")
             if proceed and model_name != default_key:
                 # number_input can't be set to None
                 if version == "All":
-                    version=None
+                    version = None
                 if min_worker == -1:
-                    min_worker=None
+                    min_worker = None
                 if max_worker == -1:
-                    max_worker=None
-                if number_gpu == -1:
-                    number_gpu=None
-                
-                res = tsa.change_model_workers(M_API, model_name, version=version, min_worker=min_worker, max_worker=max_worker, number_gpu=number_gpu)
+                    max_worker = None
+                #                 if number_gpu == -1:
+                #                     number_gpu=None
+
+                res = tsa.change_model_workers(
+                    M_API,
+                    model_name,
+                    version=version,
+                    min_worker=min_worker,
+                    max_worker=max_worker,
+#                     number_gpu=number_gpu,
+                )
                 last_res()[0] = res
                 rerun()
-

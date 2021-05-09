@@ -12,7 +12,6 @@ def raise_on_not200(response):
         st.write("There was an error!")
         st.write(response)
 
-
 client = httpx.Client(timeout=1000, event_hooks={"response": [raise_on_not200]})
 
 
@@ -22,12 +21,19 @@ def start_torchserve(model_store, config_path, log_location=None, metrics_locati
     for x in ENVIRON_WHITELIST:
         if x in env:
             new_env[x]=env[x]
-
     if log_location:
         new_env["LOG_LOCATION"]=log_location
     if metrics_location:
         new_env["METRICS_LOCATION"]=metrics_location
-    if os.path.exists(model_store) and os.path.exists(config_path):
+    if not os.path.isdir(metrics_location):
+        os.makedirs(metrics_location, exist_ok=True)
+    if not os.path.isdir(log_location):
+        os.makedirs(log_location, exist_ok=True)
+    if not os.path.exists(model_store):
+        return "Can't find model store path"
+    elif not os.path.exists(config_path):
+        return "Can't find configuration path"
+    else:
         torchserve_cmd = f"torchserve --start --ncs --model-store {model_store} --ts-config {config_path}"
         subprocess.Popen(
             torchserve_cmd.split(" "),
