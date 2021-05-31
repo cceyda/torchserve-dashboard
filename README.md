@@ -54,6 +54,8 @@ If the server doesn't start for some reason check if your ports are already in u
 
 [10-may-2021] update config & make it optional. update streamlit. Auto create folders
 
+[31-may-2021] Update to v0.4 (Add workflow API) Refactor out streamlit from api.py.  
+
 # FAQs
 - **Does torchserver keep running in the background?**
 
@@ -79,4 +81,8 @@ If the server doesn't start for some reason check if your ports are already in u
 
 Open an issue
 
+# TODOs
+- Async?
+- Better logging
+- Remote only mode
 
