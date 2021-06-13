@@ -3,6 +3,7 @@ Torchserve Dashboard using streamlit
 """
 from setuptools import find_packages, setup
 
+
 dependencies = ["streamlit==0.82.0", "click<8.0,>=7.0", "httpx>=0.16.0"]
 
 setup(
