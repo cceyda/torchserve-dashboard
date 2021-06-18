@@ -64,13 +64,3 @@ def read_file(file):
     with open(file) as f:
         content = f.read()
     return content
-
-
-def get_test_suite():
-    """
-    Prepare a test-suite callable with:
-        python setup.py test
-    """
-    test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover('tests', pattern='test_*.py')
-    return test_suite
