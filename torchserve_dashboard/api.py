@@ -130,7 +130,7 @@ class ManagementAPI:
         max_batch_delay: Optional[int] = None,
         initial_workers: Optional[int] = None,
         response_timeout: Optional[int] = None,
-    ):
+    ) -> Dict[str, str]:
 
         req_url = self.address + "/models?url=" + mar_path + "&synchronous=false"
         if model_name:
@@ -151,7 +151,9 @@ class ManagementAPI:
         res = self.client.post(req_url)
         return res.json()
 
-    def delete_model(self, model_name: str, version: Optional[str] = None):
+    def delete_model(self,
+                     model_name: str,
+                     version: Optional[str] = None) -> Dict[str, str]:
         req_url = self.address + "/models/" + model_name
         if version:
             req_url += "/" + version
@@ -168,12 +170,13 @@ class ManagementAPI:
         res = self.client.put(req_url)
         return res.json()
 
-    def change_model_workers(self,
-                             model_name: str,
-                             version: Optional[str] = None,
-                             min_worker: Optional[int] = None,
-                             max_worker: Optional[int] = None,
-                             number_gpu: Optional[int] = None):
+    def change_model_workers(
+            self,
+            model_name: str,
+            version: Optional[str] = None,
+            min_worker: Optional[int] = None,
+            max_worker: Optional[int] = None,
+            number_gpu: Optional[int] = None) -> Dict[str, str]:
         req_url = self.address + "/models/" + model_name
         if version:
             req_url += "/" + version
@@ -187,19 +190,21 @@ class ManagementAPI:
         res = self.client.put(req_url)
         return res.json()
 
-    def register_workflow(self, url: str, workflow_name: Optional[str] = None):
+    def register_workflow(self,
+                          url: str,
+                          workflow_name: Optional[str] = None) -> Dict[str, str]:
         req_url = self.address + "/workflows/" + url
         if workflow_name:
             req_url += "&workflow_name=" + workflow_name
         res = self.client.post(req_url)
         return res.json()
 
-    def get_workflow(self, workflow_name: str):
+    def get_workflow(self, workflow_name: str) -> Dict[str, str]:
         req_url = self.address + "/workflows/" + workflow_name
         res = self.client.get(req_url)
         return res.json()
 
-    def unregister_workflow(self, workflow_name: str):
+    def unregister_workflow(self, workflow_name: str) -> Dict[str, str]:
         req_url = self.address + "/workflows/" + workflow_name
         res = self.client.delete(req_url)
         return res.json()
@@ -208,7 +213,7 @@ class ManagementAPI:
         self,
         limit: Optional[int] = None,
         next_page_token: Optional[int] = None
-    ) -> Optional[List[Dict[str, Any]]]:
+    ) -> Optional[Dict[str, Any]]:
         req_url = self.address + "/workflows/"
         if limit:
             req_url += "&limit=" + str(limit)
