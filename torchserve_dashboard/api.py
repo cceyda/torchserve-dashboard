@@ -1,59 +1,73 @@
 import os
 import subprocess
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import httpx
+from httpx import Response
 
 import logging
 
-ENVIRON_WHITELIST = ["LD_LIBRARY_PATH", "LC_CTYPE", "LC_ALL", "PATH", "JAVA_HOME", "PYTHONPATH", "TS_CONFIG_FILE", "LOG_LOCATION", "METRICS_LOCATION"]
+ENVIRON_WHITELIST = [
+    "LD_LIBRARY_PATH", "LC_CTYPE", "LC_ALL", "PATH", "JAVA_HOME", "PYTHONPATH",
+    "TS_CONFIG_FILE", "LOG_LOCATION", "METRICS_LOCATION"
+]
 
 log = logging.getLogger(__name__)
 
 
 class LocalTS:
-    def __init__(self, model_store, config_path, log_location=None, metrics_location=None):
-        new_env = {}
+    def __init__(self,
+                 model_store: str,
+                 config_path: str,
+                 log_location: Optional[str] = None,
+                 metrics_location: Optional[str] = None) -> None:
+        new_env: Dict[str, Any] = {}
         env = os.environ
         for x in ENVIRON_WHITELIST:
             if x in env:
                 new_env[x] = env[x]
         if log_location:
             new_env["LOG_LOCATION"] = log_location
+            if not os.path.isdir(log_location):
+                os.makedirs(log_location, exist_ok=True)
         if metrics_location:
             new_env["METRICS_LOCATION"] = metrics_location
-        if not os.path.isdir(metrics_location):
-            os.makedirs(metrics_location, exist_ok=True)
-        if not os.path.isdir(log_location):
-            os.makedirs(log_location, exist_ok=True)
+            if not os.path.isdir(metrics_location):
+                os.makedirs(metrics_location, exist_ok=True)
 
         self.model_store = model_store
         self.config_path = config_path
         self.log_location = log_location
         self.metrics_location = metrics_location
         self.env = new_env
-    
-    def check_version(self):
+
+    def check_version(self) -> Tuple[str, Union[str, Exception]]:
         try:
-            p=subprocess.run(["torchserve","--version"], check=True,
-                            stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                            universal_newlines=True)
-            return p.stdout ,p.stderr
-        except (subprocess.CalledProcessError,OSError) as e:
-            return "",e
-         
-    def start_torchserve(self):
+            p = subprocess.run(["torchserve", "--version"],
+                               check=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               universal_newlines=True)
+            return p.stdout, p.stderr
+        except (subprocess.CalledProcessError, OSError) as e:
+            return "", e
+
+    def start_torchserve(self) -> str:
 
         if not os.path.exists(self.model_store):
             return "Can't find model store path"
         elif not os.path.exists(self.config_path):
             return "Can't find configuration path"
-        dashboard_log_path = os.path.join(self.log_location, "torchserve_dashboard.log")
+        dashboard_log_path: Optional[str] = os.path.join(
+            self.log_location, "torchserve_dashboard.log"
+        ) if self.log_location is not None else None
         torchserve_cmd = f"torchserve --start --ncs --model-store {self.model_store} --ts-config {self.config_path}"
         p = subprocess.Popen(
             torchserve_cmd.split(" "),
             env=self.env,
             stdout=subprocess.DEVNULL,
-            stderr=open(dashboard_log_path, "a+"),
+            stderr=open(dashboard_log_path, "a+")
+            if dashboard_log_path else None,
             start_new_session=True,
             close_fds=True  # IDK stackoverflow told me to do it
         )
@@ -63,33 +77,39 @@ class LocalTS:
         else:
             return f"Torchserve is already started. Check {dashboard_log_path} for errors"
 
-    def stop_torchserve(self):
+    def stop_torchserve(self) -> Union[str, Exception]:
         try:
-            p=subprocess.run(["torchserve","--stop"], check=True,
-                            stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                            universal_newlines=True)
+            p = subprocess.run(["torchserve", "--stop"],
+                               check=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               universal_newlines=True)
             return p.stdout
-        except (subprocess.CalledProcessError,OSError) as e:
+        except (subprocess.CalledProcessError, OSError) as e:
             return e
 
+
 class ManagementAPI:
-
-    def __init__(self, address, error_callback):
+    def __init__(self, address: str, error_callback) -> None:
         self.address = address
-        self.client = httpx.Client(timeout=1000, event_hooks={"response": [error_callback]})
+        self.client = httpx.Client(timeout=1000,
+                                   event_hooks={"response": [error_callback]})
 
-    def default_error_callback(response):
+    def default_error_callback(response: Response):
         if response.status_code != 200:
             log.info(f"Warn - status code: {response.status_code},{response}")
 
-    def get_loaded_models(self):
+    def get_loaded_models(self) -> Optional[Dict[str, Any]]:
         try:
             res = self.client.get(self.address + "/models")
             return res.json()
         except httpx.HTTPError:
             return None
 
-    def get_model(self, model_name, version=None, list_all=False):
+    def get_model(self,
+                  model_name: str,
+                  version: Optional[str] = None,
+                  list_all: bool = False) -> List[Dict[str, Any]]:
         req_url = self.address + "/models/" + model_name
         if version:
             req_url += "/" + version
@@ -102,14 +122,14 @@ class ManagementAPI:
     # Doesn't have version
     def register_model(
         self,
-        mar_path,
-        model_name=None,
-        handler=None,
-        runtime=None,
-        batch_size=None,
-        max_batch_delay=None,
-        initial_workers=None,
-        response_timeout=None,
+        mar_path: str,
+        model_name: Optional[str] = None,
+        handler: Optional[str] = None,
+        runtime: Optional[str] = None,
+        batch_size: Optional[int] = None,
+        max_batch_delay: Optional[int] = None,
+        initial_workers: Optional[int] = None,
+        response_timeout: Optional[int] = None,
     ):
 
         req_url = self.address + "/models?url=" + mar_path + "&synchronous=false"
@@ -131,14 +151,16 @@ class ManagementAPI:
         res = self.client.post(req_url)
         return res.json()
 
-    def delete_model(self, model_name, version):
+    def delete_model(self, model_name: str, version: Optional[str] = None):
         req_url = self.address + "/models/" + model_name
         if version:
             req_url += "/" + version
         res = self.client.delete(req_url)
         return res.json()
 
-    def change_model_default(self, model_name, version):
+    def change_model_default(self,
+                             model_name: str,
+                             version: Optional[str] = None):
         req_url = self.address + "/models/" + model_name
         if version:
             req_url += "/" + version
@@ -146,7 +168,12 @@ class ManagementAPI:
         res = self.client.put(req_url)
         return res.json()
 
-    def change_model_workers(self, model_name, version=None, min_worker=None, max_worker=None, number_gpu=None):
+    def change_model_workers(self,
+                             model_name: str,
+                             version: Optional[str] = None,
+                             min_worker: Optional[int] = None,
+                             max_worker: Optional[int] = None,
+                             number_gpu: Optional[int] = None):
         req_url = self.address + "/models/" + model_name
         if version:
             req_url += "/" + version
@@ -160,28 +187,28 @@ class ManagementAPI:
         res = self.client.put(req_url)
         return res.json()
 
-    def register_workflow(
-        self,
-        url,
-        workflow_name=None
-    ):
+    def register_workflow(self, url: str, workflow_name: Optional[str] = None):
         req_url = self.address + "/workflows/" + url
         if workflow_name:
             req_url += "&workflow_name=" + workflow_name
         res = self.client.post(req_url)
         return res.json()
 
-    def get_workflow(self, workflow_name):
+    def get_workflow(self, workflow_name: str):
         req_url = self.address + "/workflows/" + workflow_name
         res = self.client.get(req_url)
         return res.json()
 
-    def unregister_workflow(self, workflow_name):
+    def unregister_workflow(self, workflow_name: str):
         req_url = self.address + "/workflows/" + workflow_name
         res = self.client.delete(req_url)
         return res.json()
 
-    def list_workflows(self, limit=None, next_page_token=None):
+    def list_workflows(
+        self,
+        limit: Optional[int] = None,
+        next_page_token: Optional[int] = None
+    ) -> Optional[List[Dict[str, Any]]]:
         req_url = self.address + "/workflows/"
         if limit:
             req_url += "&limit=" + str(limit)
