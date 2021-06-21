@@ -2,8 +2,9 @@ import argparse
 import os
 
 import streamlit as st
+from httpx import Response
 
-from api import ManagementAPI, LocalTS
+from torchserve_dashboard.api import ManagementAPI, LocalTS
 from pathlib import Path
 
 st.set_page_config(
@@ -48,7 +49,6 @@ def check_args(args):
     if not os.path.exists(config_path):
         st.write(f"Can't find config file at {config_path}. Using default config instead")
         config_path = os.path.join(os.path.dirname(__file__), "default.torchserve.properties")
-
     if os.path.exists(config_path):
         config = open(config_path, "r").readlines()
         for c in config:
@@ -85,7 +85,7 @@ def rerun():
     st.experimental_rerun()
 
 
-def error_callback(response):
+def error_callback(response:Response):
     if response.status_code != 200:
         st.write("There was an error!")
         st.write(response)
