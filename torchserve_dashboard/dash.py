@@ -42,10 +42,10 @@ except SystemExit as e:
 
 def check_args(args):
     M_API = "http://127.0.0.1:8081"
-    model_store: str = args.model_store
-    config_path: str = args.config_path
-    log_location: str = args.log_location
-    metrics_location: str = args.metrics_location
+    model_store = args.model_store
+    config_path = args.config_path
+    log_location = args.log_location
+    metrics_location = args.metrics_location
     if not os.path.exists(config_path):
         st.write(f"Can't find config file at {config_path}. Using default config instead")
         config_path = os.path.join(os.path.dirname(__file__), "default.torchserve.properties")
