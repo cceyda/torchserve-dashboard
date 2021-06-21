@@ -96,8 +96,10 @@ setup(
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 3',
     ],
-    entry_points="""
-        [console_scripts]
-        torchserve-dashboard=torchserve_dashboard.cli:main
-        """,
+    entry_points={
+        'console_scripts':['torchserve-management=torchserve_dashboard.cli:manage',
+                          'torchserve-inference=torchserve_dashboard.cli:ui'] 
+                          # tentative..torchserve-dashboard may spin both independently.
+                          # definitely want things on different ports though (should have port assignements too, to avoid confusion)
+    }
 )
