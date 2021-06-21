@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 import httpx
 from httpx import Response
@@ -21,7 +21,7 @@ class LocalTS:
                  config_path: str,
                  log_location: Optional[str] = None,
                  metrics_location: Optional[str] = None) -> None:
-        new_env: Dict[str, Any] = {}
+        new_env = {}
         env = os.environ
         for x in ENVIRON_WHITELIST:
             if x in env:
@@ -58,7 +58,7 @@ class LocalTS:
             return "Can't find model store path"
         elif not os.path.exists(self.config_path):
             return "Can't find configuration path"
-        dashboard_log_path: Optional[str] = os.path.join(
+        dashboard_log_path = os.path.join(
             self.log_location, "torchserve_dashboard.log"
         ) if self.log_location is not None else None
         torchserve_cmd = f"torchserve --start --ncs --model-store {self.model_store} --ts-config {self.config_path}"
@@ -67,7 +67,7 @@ class LocalTS:
             env=self.env,
             stdout=subprocess.DEVNULL,
             stderr=open(dashboard_log_path, "a+")
-            if dashboard_log_path else None,
+            if dashboard_log_path else subprocess.DEVNULL,
             start_new_session=True,
             close_fds=True  # IDK stackoverflow told me to do it
         )
@@ -90,12 +90,14 @@ class LocalTS:
 
 
 class ManagementAPI:
-    def __init__(self, address: str, error_callback) -> None:
+    def __init__(self, address: str, error_callback: Callable = None) -> None:
         self.address = address
+        if not error_callback:
+            error_callback=self.default_error_callback
         self.client = httpx.Client(timeout=1000,
                                    event_hooks={"response": [error_callback]})
-
-    def default_error_callback(response: Response):
+    @staticmethod
+    def default_error_callback(response: Response) -> None:
         if response.status_code != 200:
             log.info(f"Warn - status code: {response.status_code},{response}")
 
