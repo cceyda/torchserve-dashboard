@@ -4,7 +4,8 @@ import os
 import streamlit as st
 from httpx import Response
 
-from torchserve_dashboard.api import ManagementAPI, LocalTS
+from torchserve_dashboard.api.management_api import ManagementAPI, LocalTS
+from torchserve_dashboard import _PACKAGE_ROOT
 from pathlib import Path
 
 st.set_page_config(
@@ -48,7 +49,7 @@ def check_args(args):
     metrics_location = args.metrics_location
     if not os.path.exists(config_path):
         st.write(f"Can't find config file at {config_path}. Using default config instead")
-        config_path = os.path.join(os.path.dirname(__file__), "default.torchserve.properties")
+        config_path = os.path.join(_PACKAGE_ROOT, "default.torchserve.properties")
     if os.path.exists(config_path):
         config = open(config_path, "r").readlines()
         for c in config:
