@@ -1,13 +1,40 @@
+import logging
 import os
 import subprocess
+from typing import Any, Callable, Optional
 
 import httpx
-
-import logging
+import streamlit as st
+from httpx import Response
 
 ENVIRON_WHITELIST = ["LD_LIBRARY_PATH", "LC_CTYPE", "LC_ALL", "PATH", "JAVA_HOME", "PYTHONPATH", "TS_CONFIG_FILE", "LOG_LOCATION", "METRICS_LOCATION"]
 
 log = logging.getLogger(__name__)
+
+
+
+class HTTPClient(httpx.Client):
+
+    def __init__(
+        self,
+        timeout: int = 1000,
+        error_callback: Optional[Callable] = None
+    ) -> None:
+        error_callback = error_callback or self.default_error_callback
+        super().__init__(
+            timeout=timeout, event_hooks={'response': [error_callback]}
+        )
+
+    @staticmethod
+    def default_error_callback(
+        response: Response, *args: Any, **kwargs: Any
+    ) -> None:
+        if response.status_code != 200:
+            log.info(
+                f"Warn - status code: {response.status_code}, {response}"
+            )
+            st.write(f'There was an error! Status Code {response.status_code}')
+            st.write(response)
 
 
 class LocalTS:
@@ -31,7 +58,7 @@ class LocalTS:
         self.log_location = log_location
         self.metrics_location = metrics_location
         self.env = new_env
-    
+
     def check_version(self):
         try:
             p=subprocess.run(["torchserve","--version"], check=True,
@@ -40,7 +67,7 @@ class LocalTS:
             return p.stdout ,p.stderr
         except (subprocess.CalledProcessError,OSError) as e:
             return "",e
-         
+
     def start_torchserve(self):
 
         if not os.path.exists(self.model_store):
@@ -74,13 +101,9 @@ class LocalTS:
 
 class ManagementAPI:
 
-    def __init__(self, address, error_callback):
+    def __init__(self, address, http_client):
         self.address = address
-        self.client = httpx.Client(timeout=1000, event_hooks={"response": [error_callback]})
-
-    def default_error_callback(response):
-        if response.status_code != 200:
-            log.info(f"Warn - status code: {response.status_code},{response}")
+        self.client = http_client
 
     def get_loaded_models(self):
         try:

@@ -3,7 +3,7 @@ import os
 
 import streamlit as st
 
-from api import ManagementAPI, LocalTS
+from torchserve_dashboard.api import ManagementAPI, LocalTS, HTTPClient
 from pathlib import Path
 
 st.set_page_config(
@@ -99,8 +99,8 @@ def last_res():
 def get_model_store():
     return os.listdir(model_store)
 
-
-api = ManagementAPI(api_address, error_callback)
+http_client = HTTPClient()
+api = ManagementAPI(api_address, http_client)
 ts = LocalTS(model_store, config_path, log_location, metrics_location)
 ts_version,ts_error=ts.check_version() # doing it this way rather than ts.__version__ on purpose
 if ts_error:
