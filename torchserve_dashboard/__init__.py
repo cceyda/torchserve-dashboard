@@ -7,7 +7,7 @@ __version__ = 'v0.4.0'
 
 __author_name__ = 'Ceyda Cinarel'
 __author_email__ = '15624271+cceyda@users.noreply.github.com'
-__license__ = 'LICENSE'
+__license__ = 'Apache Software License'
 __copyright__ = f'Copyright (c) 2020-{date.today().year}, {__author_name__}.'
 __homepage__ = 'https://github.com/cceyda'
 __download_url__ = 'https://github.com/cceyda/torchserve-dashboard'

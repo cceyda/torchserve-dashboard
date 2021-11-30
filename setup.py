@@ -89,8 +89,7 @@ setup(
         'Development Status :: 4 - Beta',
         # Indicate who your project is intended for
         'Intended Audience :: Developers, Users',
-        'License :: OSI Approved :: {} License'.format(
-            torchserve_dashboard.__license__),
+        'License :: OSI Approved :: {torchserve_dashboard.__license__}',
         'Operating System :: OS Independent',
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
