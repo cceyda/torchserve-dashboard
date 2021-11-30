@@ -9,7 +9,8 @@ import logging
 
 ENVIRON_WHITELIST = [
     "LD_LIBRARY_PATH", "LC_CTYPE", "LC_ALL", "PATH", "JAVA_HOME", "PYTHONPATH",
-    "TS_CONFIG_FILE", "LOG_LOCATION", "METRICS_LOCATION"
+    "TS_CONFIG_FILE", "LOG_LOCATION", "METRICS_LOCATION",
+    "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION"
 ]
 
 log = logging.getLogger(__name__)
@@ -18,14 +19,17 @@ log = logging.getLogger(__name__)
 class LocalTS:
     def __init__(self,
                  model_store: str,
-                 config_path: str,
+                 config_path: Optional[str] = None,
                  log_location: Optional[str] = None,
-                 metrics_location: Optional[str] = None) -> None:
+                 metrics_location: Optional[str] = None,
+                 log_config: Optional[str] = None) -> None:
         new_env = {}
         env = os.environ
         for x in ENVIRON_WHITELIST:
             if x in env:
                 new_env[x] = env[x]
+        if config_path:
+            new_env["TS_CONFIG_FILE"] = config_path
         if log_location:
             new_env["LOG_LOCATION"] = log_location
             if not os.path.isdir(log_location):
@@ -39,6 +43,7 @@ class LocalTS:
         self.config_path = config_path
         self.log_location = log_location
         self.metrics_location = metrics_location
+        self.log_config = log_config
         self.env = new_env
 
     def check_version(self) -> Tuple[str, Union[str, Exception]]:
@@ -62,6 +67,8 @@ class LocalTS:
             self.log_location, "torchserve_dashboard.log"
         ) if self.log_location is not None else None
         torchserve_cmd = f"torchserve --start --ncs --model-store {self.model_store} --ts-config {self.config_path}"
+        if self.log_config:
+            torchserve_cmd += f" --log-config {self.log_config}"
         p = subprocess.Popen(
             torchserve_cmd.split(" "),
             env=self.env,
@@ -132,6 +139,7 @@ class ManagementAPI:
         max_batch_delay: Optional[int] = None,
         initial_workers: Optional[int] = None,
         response_timeout: Optional[int] = None,
+        is_encrypted: Optional[bool] = None,
     ) -> Dict[str, str]:
 
         req_url = self.address + "/models?url=" + mar_path + "&synchronous=false"
@@ -149,6 +157,8 @@ class ManagementAPI:
             req_url += "&initial_workers=" + str(initial_workers)
         if response_timeout:
             req_url += "&response_timeout=" + str(response_timeout)
+        if is_encrypted:
+            req_url += "&s3_sse_kms=true"
 
         res = self.client.post(req_url)
         return res.json()
