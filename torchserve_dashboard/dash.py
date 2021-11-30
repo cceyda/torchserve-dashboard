@@ -34,18 +34,24 @@ parser.add_argument(
     default="./logs/metrics/",
     help="Passed as environment variable METRICS_LOCATION to Torchserve",
 )
+parser.add_argument(
+    "--log_config",
+    default=None,
+    help="Overrides the default log4j.properties",
+)
 try:
     args = parser.parse_args()
 except SystemExit as e:
     os._exit(e.code)
 
-
+# Clean this up later
 def check_args(args):
     M_API = "http://127.0.0.1:8081"
     model_store = args.model_store
     config_path = args.config_path
     log_location = args.log_location
     metrics_location = args.metrics_location
+    log_config = args.log_config
     if not os.path.exists(config_path):
         st.write(f"Can't find config file at {config_path}. Using default config instead")
         config_path = os.path.join(os.path.dirname(__file__), "default.torchserve.properties")
@@ -57,6 +63,8 @@ def check_args(args):
                     model_store = c.split("=")[-1].strip()
             if c.startswith("management_address"):
                 M_API = c.split("=")[-1].strip()
+    else:
+        st.write("Config file can't be found!")
 
     if log_location:
         log_location = str(Path(log_location).resolve())
@@ -73,12 +81,12 @@ def check_args(args):
         st.write(f"Created model store directory {model_store}")
         os.makedirs(model_store, exist_ok=True)
 
-    return M_API, config, model_store, config_path, log_location, metrics_location
+    return M_API, config, model_store, config_path, log_location, metrics_location, log_config
 
 
 st.title("Torchserve Management Dashboard")
 default_key = "None"
-api_address, config, model_store, config_path, log_location, metrics_location = check_args(args)
+api_address, config, model_store, config_path, log_location, metrics_location, log_config = check_args(args)
 
 
 def rerun():
@@ -101,7 +109,7 @@ def get_model_store():
 
 
 api = ManagementAPI(api_address, error_callback)
-ts = LocalTS(model_store, config_path, log_location, metrics_location)
+ts = LocalTS(model_store, config_path, log_location, metrics_location, log_config)
 ts_version,ts_error=ts.check_version() # doing it this way rather than ts.__version__ on purpose
 if ts_error:
     st.error(ts_error)
@@ -114,7 +122,7 @@ if '0.4' in ts_version:
 # As a design choice I'm leaving config_path,log_location,metrics_location non-editable from the UI as a semi-security measure (maybe?:/)
 ##########Sidebar##########
 st.sidebar.markdown("## Help")
-with st.sidebar.beta_expander(label="Show Paths:", expanded=False):
+with st.sidebar.expander(label="Show Paths:", expanded=False):
     st.markdown(f"### Model Store Path: \n {model_store}")
     st.markdown(f"### Config Path: \n {config_path}")
     st.markdown(f"### Log Location: \n {log_location}")
@@ -145,13 +153,13 @@ st.sidebar.write(stored_models)
 
 st.markdown(f"**Last Message**: {last_res()[0]}")
 
-with st.beta_expander(label="Show torchserve config", expanded=False):
+with st.expander(label="Show torchserve config", expanded=False):
     st.write(config)
     st.markdown("[configuration docs](https://pytorch.org/serve/configuration.html)")
 
 if torchserve_status:
 
-    with st.beta_expander(label="Register a model", expanded=False):
+    with st.expander(label="Register a model", expanded=False):
 
         st.markdown(
             "# Register a model [(docs)](https://pytorch.org/serve/management_api.html#register-a-model)"
@@ -160,12 +168,12 @@ if torchserve_status:
         mar_path = placeholder.selectbox(
             "Choose mar file *", [default_key] + stored_models, index=0
         )
-        # mar_path = os.path.join(model_store,mar_path)
-        p = st.checkbox("manually enter path")
+        p = st.checkbox("manually enter location")
         if p:
             mar_path = placeholder.text_input("Input mar file path*")
+        
         model_name = st.text_input(label="Model name (overrides predefined)")
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         batch_size = col1.number_input(label="batch_size", value=0, min_value=0, step=1)
         max_batch_delay = col2.number_input(
             label="max_batch_delay", value=0, min_value=0, step=100
@@ -178,7 +186,7 @@ if torchserve_status:
         )
         handler = col1.text_input(label="handler")
         runtime = col2.text_input(label="runtime")
-
+        is_encrypted = st.checkbox("SSE-KMS Encrypted", help="Refer to https://github.com/pytorch/serve/blob/v0.5.0/docs/management_api.md#encrypted-model-serving")
         proceed = st.button("Register")
         if proceed:
             if mar_path != default_key:
@@ -192,13 +200,14 @@ if torchserve_status:
                     max_batch_delay=max_batch_delay,
                     initial_workers=initial_workers,
                     response_timeout=response_timeout,
+                    is_encrypted=is_encrypted,
                 )
                 last_res()[0] = res
                 rerun()
             else:
                 st.warning(":octagonal_sign: Fill the required fileds!")
 
-    with st.beta_expander(label="Remove a model", expanded=False):
+    with st.expander(label="Remove a model", expanded=False):
 
         st.header("Remove a model")
         model_name = st.selectbox(
@@ -221,7 +230,7 @@ if torchserve_status:
                 else:
                     st.warning(":octagonal_sign: Pick a model & version!")
 
-    with st.beta_expander(label="Get model details", expanded=False):
+    with st.expander(label="Get model details", expanded=False):
 
         st.header("Get model details")
         model_name = st.selectbox(
@@ -243,7 +252,7 @@ if torchserve_status:
                     res = api.get_model(model_name, version)
                     st.write(res)
 
-    with st.beta_expander(label="Scale workers", expanded=False):
+    with st.expander(label="Scale workers", expanded=False):
         st.markdown(
             "# Scale workers [(docs)](https://pytorch.org/serve/management_api.html#scale-workers)"
         )
@@ -257,7 +266,7 @@ if torchserve_status:
             versions = [m["modelVersion"] for m in versions]
             version = st.selectbox("Choose version", ["All"] + versions, index=0)
 
-            col1, col2, col3 = st.beta_columns(3)
+            col1, col2, col3 = st.columns(3)
             min_worker = col1.number_input(
                 label="min_worker(optional)", value=-1, min_value=-1, step=1
             )
@@ -286,7 +295,7 @@ if torchserve_status:
                 last_res()[0] = res
                 rerun()
     if support_workflow:
-        with st.beta_expander(label="Register Workflow", expanded=False):
+        with st.expander(label="Register Workflow", expanded=False):
             st.markdown(
                 "# Register a workflow [(docs)](https://pytorch.org/serve/workflow_management_api.html#register-a-workflow)"
             )
@@ -296,7 +305,7 @@ if torchserve_status:
                 res = api.register_workflow(url, workflow_name)
                 st.write(res)
 
-        with st.beta_expander(label="Show Workflow Details", expanded=False):
+        with st.expander(label="Show Workflow Details", expanded=False):
             st.markdown(
                 "# Describe a workflow [(docs)](https://pytorch.org/serve/workflow_management_api.html#describe-workflow)"
             )
@@ -310,7 +319,7 @@ if torchserve_status:
                     res = api.get_workflow(workflow_name)
                     st.write(res)
 
-        with st.beta_expander(label="Unregister Workflow", expanded=False):
+        with st.expander(label="Unregister Workflow", expanded=False):
             st.markdown(
                 "# Unregister a Workflow [(docs)](https://pytorch.org/serve/workflow_management_api.html#unregister-a-workflow)"
             )
@@ -324,7 +333,7 @@ if torchserve_status:
                     res = api.unregister_workflow(workflow_name)
                     st.write(res)
 
-        with st.beta_expander(label="List Workflows", expanded=False):
+        with st.expander(label="List Workflows", expanded=False):
             st.markdown(
                 "# List Workflows"
             )

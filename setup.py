@@ -70,7 +70,7 @@ setup(
     install_requires=setup_tools.load_requirements(
         file_name='install.txt'),  # Optional
     extras_require=_prepare_extras(),
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 
     # test_suite='setup.get_test_suite',
     # tests_require=["coverage"],

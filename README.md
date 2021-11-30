@@ -1,4 +1,7 @@
 # Torchserve Dashboard
+[![Total Downloads](https://pepy.tech/badge/torchserve-dashboard)](https://pepy.tech/project/torchserve-dashboard)
+![](https://img.shields.io/pypi/dm/torchserve-dashboard)
+
 
 Torchserve Dashboard using Streamlit
 
@@ -8,7 +11,7 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 
 # Usage
 Additional Requirement: 
-[torchserve](https://github.com/pytorch/serve/tree/v0.3.1#install-torchserve-and-torch-model-archiver) (recommended:v0.3.1)
+[torchserve](https://github.com/pytorch/serve/tree/v0.5.0#install-torchserve-and-torch-model-archiver) (recommended:v0.5.0)
 
 Simply run:
 
@@ -22,7 +25,7 @@ torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties
 torchserve-dashboard -- --config_path ./torchserve.properties --model_store ./model_store
 ```
 
-:exclamation: Keep in mind that If you change any of the `--config_path`,`--model_store`,`--metrics_location`,`--log_location` options while there is a torchserver already running before starting torch-dashboard they won't come into effect until you stop&start torchserve.
+:exclamation: Keep in mind that If you change any of the `--config_path`,`--model_store`,`--metrics_location`,`--log_location` options while there is a torchserver already running before starting torch-dashboard they won't come into effect until you stop&start torchserve. These options are used instead of their respective environment variables `TS_CONFIG_FILE, METRICS_LOCATION, LOG_LOCATION`.
 
 OR 
 ```bash
@@ -56,6 +59,8 @@ If the server doesn't start for some reason check if your ports are already in u
 
 [31-may-2021] Update to v0.4 (Add workflow API) Refactor out streamlit from api.py.  
 
+[30-nov-2021] Update to v0.5, adding support for [encrypted model serving](https://github.com/pytorch/serve/blob/v0.5.0/docs/management_api.md#encrypted-model-serving) (not tested). Update streamlit to v1+
+
 # FAQs
 - **Does torchserver keep running in the background?**
 
@@ -65,7 +70,7 @@ If the server doesn't start for some reason check if your ports are already in u
 
     These environment variables are passed to the torchserve command:
     
-    `ENVIRON_WHITELIST=["LD_LIBRARY_PATH","LC_CTYPE","LC_ALL","PATH","JAVA_HOME","PYTHONPATH","TS_CONFIG_FILE","LOG_LOCATION","METRICS_LOCATION"]`
+    `ENVIRON_WHITELIST=["LD_LIBRARY_PATH","LC_CTYPE","LC_ALL","PATH","JAVA_HOME","PYTHONPATH","TS_CONFIG_FILE","LOG_LOCATION","METRICS_LOCATION","AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION"]`
 
 - **How to change the logging format of torchserve?**
 
