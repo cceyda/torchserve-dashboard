@@ -11,7 +11,7 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 
 # Usage
 Additional Requirement: 
-[torchserve](https://github.com/pytorch/serve/tree/v0.5.0#install-torchserve-and-torch-model-archiver) (recommended:v0.5.0)
+[torchserve](https://github.com/pytorch/serve/tree/v0.5.0#install-torchserve-and-torch-model-archiver) (recommended:v0.5.1)
 
 Simply run:
 
@@ -74,9 +74,9 @@ If the server doesn't start for some reason check if your ports are already in u
 
 - **How to change the logging format of torchserve?**
 
-    You can set the location of your custom log4j config in your configuration file as in [here](https://pytorch.org/serve/logging.html#provide-with-config-properties)
+    You can set the location of your custom log4j2 config in your configuration file as in [here](https://pytorch.org/serve/logging.html#provide-with-config-properties)
     
-    `vmargs=-Dlog4j.configuration=file:///path/to/custom/log4j.properties`
+    `vmargs=-Dlog4j.configurationFile=file:///path/to/custom/log4j2.xml`
     
 - **What is the meaning behind the weird versioning**?
 
