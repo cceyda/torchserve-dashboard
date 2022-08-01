@@ -95,6 +95,9 @@ class LocalTS:
         except (subprocess.CalledProcessError, OSError) as e:
             return e
 
+    def get_model_store(self) -> List[str]:
+        return os.listdir(self.model_store)
+
 
 class ManagementAPI:
     def __init__(self, address: str, error_callback: Callable = None) -> None:
@@ -118,12 +121,15 @@ class ManagementAPI:
     def get_model(self,
                   model_name: str,
                   version: Optional[str] = None,
-                  list_all: bool = False) -> List[Dict[str, Any]]:
+                  list_all: bool = False,
+                  custom_metadata: bool = False) -> List[Dict[str, Any]]:
         req_url = self.address + "/models/" + model_name
         if version:
             req_url += "/" + version
         elif list_all:
             req_url += "/all"
+        if custom_metadata:
+            req_url += "?customized=true"
 
         res = self.client.get(req_url)
         return res.json()
