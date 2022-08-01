@@ -11,7 +11,7 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 
 # Usage
 Additional Requirement: 
-[torchserve](https://github.com/pytorch/serve/tree/v0.5.2#install-torchserve-and-torch-model-archiver) (recommended:v0.5.2)
+[torchserve](https://github.com/pytorch/serve/tree/v0.5.3#-quick-start-with-torchserve) (recommended:v0.5.3, supports: v0.6.0)
 
 Simply run:
 
