@@ -3,7 +3,7 @@ import logging as __logging
 import os
 from  datetime import date
 
-__version__ = 'v0.5.0'
+__version__ = 'v0.6.0'
 
 __author_name__ = 'Ceyda Cinarel'
 __author_email__ = '15624271+cceyda@users.noreply.github.com'
