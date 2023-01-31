@@ -1,6 +1,6 @@
 # Torchserve Dashboard
 [![Total Downloads](https://pepy.tech/badge/torchserve-dashboard)](https://pepy.tech/project/torchserve-dashboard)
-![](https://img.shields.io/pypi/dm/torchserve-dashboard)
+[![Downloads](https://static.pepy.tech/badge/torchserve-dashboard/month)](https://pepy.tech/project/torchserve-dashboard)
 
 
 Torchserve Dashboard using Streamlit
@@ -11,7 +11,7 @@ Related blog [post](https://cceyda.github.io/blog/torchserve/streamlit/dashboard
 
 # Usage
 Additional Requirement: 
-[torchserve](https://github.com/pytorch/serve/tree/v0.5.3#-quick-start-with-torchserve) (tested on:v0.5.3, supports: v0.6.1)
+[torchserve](https://github.com/pytorch/serve/tree/v0.7.0#-quick-start-with-torchserve) (tested on:v0.5.3, supports: v0.7.0 (no API changes between versions))
 
 Simply run:
 
